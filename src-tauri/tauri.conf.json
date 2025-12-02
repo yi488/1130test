@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "test",
+  "version": "0.1.0",
+  "identifier": "com.yang.test",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": " ",
+        "width": 1200,
+        "height": 800,
+        "decorations": true,
+        "transparent":true,
+        "fullscreen":true,
+        "titleBarStyle": "Overlay",
+        "theme": "Dark"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://webapi.amap.com; style-src 'self' 'unsafe-inline' https://webapi.amap.com; img-src 'self' data: https://webapi.amap.com https://webapi.amap.com https://webapi.amap.com https://restapi.amap.com; connect-src 'self' https://webapi.amap.com https://restapi.amap.com;"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
