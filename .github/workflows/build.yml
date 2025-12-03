@@ -5,23 +5,25 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  release:
+    types: [ published ]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup pnpm
-      uses: pnpm/action-setup@v2
+      uses: pnpm/action-setup@v4
       with:
-        version: 8
+        version: latest
     
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'pnpm'
     
     - name: Install system dependencies
@@ -33,16 +35,12 @@ jobs:
           curl \
           wget \
           file \
-          libssl-dev
+          libssl-dev \
+          libayatana-appindicator3-dev \
+          librsvg2-dev
     
     - name: Install Rust
-      run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-    
-    - name: Add Windows target
-      run: |
-        rustup target add x86_64-pc-windows-gnu
+      uses: dtolnay/rust-toolchain@stable
     
     - name: Install dependencies
       run: pnpm install
@@ -50,13 +48,48 @@ jobs:
     - name: Build for Linux
       run: pnpm tauri build
     
-    - name: Build for Windows
-      run: pnpm tauri build -- --target x86_64-pc-windows-gnu
-    
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v4
       with:
-        name: app-bundles
-        path: |
-          src-tauri/target/release/bundle/
-          src-tauri/target/x86_64-pc-windows-gnu/release/bundle/
+        name: linux-bundles
+        path: src-tauri/target/release/bundle/
+
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: latest
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: x86_64-pc-windows-msvc
+    
+    - name: Install dependencies
+      run: pnpm install
+    
+    - name: Build for Windows
+      run: pnpm tauri build
+    
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-bundles
+        path: src-tauri/target/release/bundle/
+    
+    - name: Upload NSIS installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-installer
+        path: src-tauri/target/release/bundle/nsis/
