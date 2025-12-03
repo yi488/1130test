@@ -1,4 +1,4 @@
-name: Build Tauri App
+name: Build Tauri App (Windows Only)
 
 on:
   push:
@@ -9,87 +9,47 @@ on:
     types: [ published ]
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: latest
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'pnpm'
-    
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          libwebkit2gtk-4.0-dev \
-          build-essential \
-          curl \
-          wget \
-          file \
-          libssl-dev \
-          libayatana-appindicator3-dev \
-          librsvg2-dev
-    
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-    
-    - name: Install dependencies
-      run: pnpm install
-    
-    - name: Build for Linux
-      run: pnpm tauri build
-    
-    - name: Upload Linux artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: linux-bundles
-        path: src-tauri/target/release/bundle/
-
   build-windows:
     runs-on: windows-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: latest
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'pnpm'
-    
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: x86_64-pc-windows-msvc
-    
-    - name: Install dependencies
-      run: pnpm install
-    
-    - name: Build for Windows
-      run: pnpm tauri build
-    
-    - name: Upload Windows artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-bundles
-        path: src-tauri/target/release/bundle/
-    
-    - name: Upload NSIS installer
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-installer
-        path: src-tauri/target/release/bundle/nsis/
+      - uses: actions/checkout@v4
+
+      - name: Enable long paths
+        run: git config --system core.longpaths true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build Tauri (Windows NSIS)
+        env:
+          TAURI_PLATFORM: "windows"
+        run: pnpm tauri build
+
+      - name: Upload Windows bundles
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-bundles
+          path: src-tauri/target/release/bundle/
+
+      - name: Upload Windows NSIS Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: src-tauri/target/release/bundle/nsis/
