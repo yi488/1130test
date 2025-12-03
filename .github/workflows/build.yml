@@ -1,0 +1,15 @@
+name: Build Windows Installer
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: tauri-apps/tauri-action@v0
+        with:
+          tagName: v__VERSION__
+          releaseName: "v__VERSION__"
+          releaseBody: "See the assets to download this version and install."
+          releaseDraft: true
+          prerelease: false
