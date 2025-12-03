@@ -45,22 +45,15 @@
         "language": ["zh-CN", "en-US"],
         "template": "main",
         "skipWebview": false,
-        "license": null,
-        "enableElevateUpdateTask": false,
-        "bannerPath": "icons/banner.bmp",
-        "dialogImagePath": "icons/dialog.bmp"
+        "enableElevateUpdateTask": false
       },
       "nsis": {
-        "license": null,
-        "headerImage": "icons/header.bmp",
-        "sidebarImage": "icons/sidebar.bmp",
         "installerIcon": "icons/icon.ico",
         "uninstallerIcon": "icons/icon.ico",
         "allowDowngrades": true,
         "displayLanguageSelector": true,
         "languages": ["SimpChinese", "English"],
         "template": "main",
-        "customLanguageFiles": {},
         "compressionLevel": "default"
       }
     },
