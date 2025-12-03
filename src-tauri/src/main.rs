@@ -9,9 +9,13 @@ use db::Database;
 use error::Result;
 use api::auth::init_auth_state;
 
+
+
 #[tokio::main]
 async fn main() -> Result<()> {
+    
     tauri::Builder::default()
+        
         .setup(|app| {
             // 初始化认证状态
             app.manage(init_auth_state());
@@ -45,6 +49,7 @@ async fn main() -> Result<()> {
             api::auth::update_profile,
             api::auth::validate_password_strength,
             api::ai::chat_with_ai,
+            
         ])
         .run(tauri::generate_context!())
         .expect("运行 Tauri 应用时出错");

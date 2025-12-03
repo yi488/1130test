@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Heart, ZoomIn, Calendar, MapPin } from "lucide-react";
+import { Heart, ZoomIn, Calendar, MapPin, Clock } from "lucide-react";
 import { ArtifactWithFavorite } from "../../types";
+import { historyApi } from "../../lib/api";
 
 interface ArtifactCardProps {
   artifact: ArtifactWithFavorite;
@@ -17,6 +19,20 @@ export function ArtifactCard({
   onToggleFavorite,
   variant = "default"
 }: ArtifactCardProps) {
+  // Track when an artifact is viewed
+  useEffect(() => {
+    if (artifact?.id) {
+      // Only track when the component mounts or artifact changes
+      const trackView = async () => {
+        try {
+          await historyApi.addToHistory(artifact.id);
+        } catch (error) {
+          console.error('Error adding to history:', error);
+        }
+      };
+      trackView();
+    }
+  }, [artifact?.id]);
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {

@@ -31,6 +31,30 @@ export const clearAuthToken = () => {
   localStorage.removeItem('auth_token');
 };
 
+export const historyApi = {
+  addToHistory: (artifactId: number): Promise<void> => {
+    const token = getAuthToken();
+    if (!token) return Promise.resolve();
+    return invoke('add_to_history', { artifactId, token });
+  },
+  
+  getBrowsingHistory: (): Promise<Array<{
+    id: number;
+    artifact: ArtifactWithFavorite;
+    viewed_at: string;
+  }>> => {
+    const token = getAuthToken();
+    if (!token) return Promise.resolve([]);
+    return invoke('get_browsing_history', { token });
+  },
+  
+  clearBrowsingHistory: (): Promise<void> => {
+    const token = getAuthToken();
+    if (!token) return Promise.resolve();
+    return invoke('clear_browsing_history', { token });
+  },
+};
+
 export const artifactApi = {
   getArtifacts: (params?: SearchParams): Promise<ArtifactWithFavorite[]> => {
     const token = getAuthToken();

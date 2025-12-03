@@ -1,226 +1,267 @@
 import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { Search, Clock, Calendar, X, ExternalLink } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { Search, Clock, X, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Skeleton } from '../components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
+import { historyApi } from '../lib/api';
+import { ArtifactWithFavorite } from '../types';
 
 interface HistoryItem {
-  id: string;
-  title: string;
-  url: string;
-  domain: string;
-  timestamp: number;
-  favicon: string;
+  id: number;
+  artifact: ArtifactWithFavorite;
+  viewed_at: string;
 }
 
 export function BrowsingHistoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [timeRange, setTimeRange] = useState('all');
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  // Mock data - in a real app, this would come from a browser extension API or backend
+  // Load browsing history
   useEffect(() => {
-    const mockHistory: HistoryItem[] = [
-      {
-        id: '1',
-        title: 'Example Page 1',
-        url: 'https://example.com/page1',
-        domain: 'example.com',
-        timestamp: Date.now() - 3600000 * 2, // 2 hours ago
-        favicon: 'https://www.google.com/s2/favicons?domain=example.com',
-      },
-      {
-        id: '2',
-        title: 'Example Page 2',
-        url: 'https://example.org/page2',
-        domain: 'example.org',
-        timestamp: Date.now() - 86400000, // 1 day ago
-        favicon: 'https://www.google.com/s2/favicons?domain=example.org',
-      },
-    ];
+    let isMounted = true;
+    
+    const loadHistory = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await historyApi.getBrowsingHistory();
+        if (isMounted) {
+          setHistory(data);
+        }
+      } catch (err) {
+        console.error('Failed to load browsing history:', err);
+        if (isMounted) {
+          setError('无法加载浏览历史，请稍后重试');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setHistory(mockHistory);
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
+    loadHistory();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const filteredHistory = history.filter((item) => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.url.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const now = Date.now();
-    let matchesTimeRange = true;
-    
-    if (timeRange === 'today') {
-      const oneDayAgo = now - 86400000;
-      matchesTimeRange = item.timestamp > oneDayAgo;
-    } else if (timeRange === 'week') {
-      const oneWeekAgo = now - 604800000;
-      matchesTimeRange = item.timestamp > oneWeekAgo;
-    } else if (timeRange === 'month') {
-      const oneMonthAgo = now - 2592000000;
-      matchesTimeRange = item.timestamp > oneMonthAgo;
+  // Filter history based on search term
+  const filteredHistory = history.filter(item => 
+    item.artifact.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.artifact.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.artifact.dynasty?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.artifact.category?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleClearHistory = async () => {
+    if (!window.confirm('确定要清空所有浏览历史吗？此操作不可撤销。')) {
+      return;
     }
     
-    return matchesSearch && matchesTimeRange;
-  });
-
-  const clearHistory = () => {
-    // In a real app, this would clear the actual browser history
+    try {
+      await historyApi.clearBrowsingHistory();
+      setHistory([]);
+    } catch (err) {
+      console.error('Failed to clear history:', err);
+      setError('清空历史记录失败，请重试');
+    }
+  };
+  
+  const handleRetry = () => {
+    setError(null);
+    // Trigger a reload of the history
     setHistory([]);
+    const loadHistory = async () => {
+      try {
+        setIsLoading(true);
+        const data = await historyApi.getBrowsingHistory();
+        setHistory(data);
+      } catch (err) {
+        console.error('Failed to load browsing history:', err);
+        setError('无法加载浏览历史，请稍后重试');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadHistory();
   };
 
-  const openInNewTab = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const handleViewArtifact = (artifact: ArtifactWithFavorite) => {
+    navigate(`/artifacts/${artifact.id}`);
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">浏览历史</h1>
+          <Skeleton className="h-9 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="h-48">
+              <CardContent className="p-4">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-4" />
+                <div className="flex space-x-2 mb-4">
+                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+                <Skeleton className="h-4 w-full mb-1" />
+                <Skeleton className="h-4 w-5/6" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
-
+  
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 p-4 rounded-md">
-          <p className="text-red-700">Error loading browsing history: {error}</p>
+      <div className="container mx-auto p-6">
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">加载失败</h2>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <Button onClick={handleRetry}>
+            重试
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex flex-col space-y-6">
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-          <h1 className="text-2xl font-bold">浏览历史</h1>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm" onClick={clearHistory}>
-              清除历史记录
-            </Button>
-          </div>
+    <div className="container mx-auto p-4 md:p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Clock className="h-6 w-6" />
+            浏览历史
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            您最近查看的文物记录
+          </p>
         </div>
-
-        <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+        
+        <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="搜索历史记录..."
-              className="pl-10"
+              placeholder="搜索文物名称、描述或朝代..."
+              className="pl-10 w-full"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8"
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             )}
           </div>
           
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-[180px]">
-              <Calendar className="mr-2 h-4 w-4" />
-              <SelectValue placeholder="时间范围" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">所有时间</SelectItem>
-              <SelectItem value="today">今天</SelectItem>
-              <SelectItem value="week">最近一周</SelectItem>
-              <SelectItem value="month">最近一个月</SelectItem>
-            </SelectContent>
-          </Select>
+          <Button 
+            variant="outline" 
+            onClick={handleClearHistory}
+            disabled={history.length === 0}
+            className="w-full sm:w-auto"
+          >
+            清空历史记录
+          </Button>
         </div>
-
-        {filteredHistory.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 space-y-4 text-center">
-            <Clock className="h-12 w-12 text-gray-400" />
-            <h3 className="text-lg font-medium">没有找到历史记录</h3>
-            <p className="text-gray-500">
-              {searchTerm ? '尝试调整搜索词' : '您的浏览历史记录将显示在这里'}
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">
-                    <span className="sr-only">网站图标</span>
-                  </TableHead>
-                  <TableHead>标题</TableHead>
-                  <TableHead>网址</TableHead>
-                  <TableHead className="text-right">访问时间</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredHistory.map((item) => (
-                  <TableRow key={item.id} className="hover:bg-gray-50">
-                    <TableCell>
-                      {item.favicon ? (
-                        <img
-                          src={item.favicon}
-                          alt=""
-                          className="h-5 w-5"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="font-medium max-w-[300px] truncate">
-                      {item.title}
-                    </TableCell>
-                    <TableCell className="text-gray-500 max-w-[300px] truncate">
-                      {item.domain}
-                    </TableCell>
-                    <TableCell className="text-right text-gray-500">
-                      {format(new Date(item.timestamp), 'yyyy-MM-dd HH:mm')}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openInNewTab(item.url)}
-                        title="在新标签页中打开"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
       </div>
+
+      {error ? (
+        <Card className="text-center p-8">
+          <p className="text-red-500">{error}</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            重试
+          </Button>
+        </Card>
+      ) : history.length === 0 ? (
+        <Card className="text-center p-12">
+          <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium">暂无浏览历史</h3>
+          <p className="text-muted-foreground mt-1">
+            您查看的文物将显示在这里
+          </p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => navigate('/')}
+          >
+            去浏览文物
+          </Button>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {filteredHistory.length === 0 ? (
+            <Card className="text-center p-8">
+              <p className="text-muted-foreground">
+                没有找到匹配的浏览记录
+              </p>
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => setSearchTerm('')}
+              >
+                清空搜索
+              </Button>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredHistory.map((item) => (
+                <Card 
+                  key={item.id} 
+                  className="hover:shadow-md transition-shadow cursor-pointer group"
+                  onClick={() => handleViewArtifact(item.artifact)}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg group-hover:text-primary line-clamp-1">
+                        {item.artifact.title}
+                      </CardTitle>
+                      <Badge variant="outline" className="ml-2 shrink-0">
+                        {item.artifact.dynasty}
+                      </Badge>
+                    </div>
+                    <CardDescription className="line-clamp-2 h-10">
+                      {item.artifact.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-1" />
+                      <span>{formatDistanceToNow(new Date(item.viewed_at), { addSuffix: true })}</span>
+                      <span className="mx-2">•</span>
+                      <span>{item.artifact.category}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

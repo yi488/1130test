@@ -7,9 +7,12 @@ import {
   Bookmark,
   Box,
   Map,
-  Bot
+  Bot,
+  LogIn
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import { getAuthToken } from '../../lib/api';
+import { useState, useEffect } from 'react';
 
 const utilityFeatures = [
   { id: '3d-artifacts', label: '3D文物', icon: Box },
@@ -38,10 +41,16 @@ export function Sidebar({
     // { id: 'architecture', label: '古代建筑', icon: Building },
   ];
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!getAuthToken());
+  }, []);
+
   const personalSections = [
-    { id: 'favorites', label: '收藏的文物', icon: Heart },
-    { id: 'browsing', label: '浏览历史', icon: Bookmark },
-    // { id: 'downloads', label: '下载内容', icon: Download },
+    { id: 'favorites', label: '收藏的文物', icon: Heart, requiresAuth: true },
+    { id: 'browsing', label: '浏览历史', icon: Bookmark, requiresAuth: true },
+    // { id: 'downloads', label: '下载内容', icon: Download, requiresAuth: true },
   ];
 
   return (
@@ -112,18 +121,51 @@ export function Sidebar({
             {personalSections.map((section) => {
               const IconComponent = section.icon;
               const routePath = section.id === 'browsing' ? '/browsing-history' : `/${section.id}`;
+              
+              const handleClick = () => {
+                if (section.requiresAuth && !isLoggedIn) {
+                  // Show login dialog
+                  const event = new CustomEvent('show-login-dialog', { 
+                    detail: { 
+                      message: `请先登录以${section.id === 'favorites' ? '查看收藏的文物' : '查看浏览历史'}`,
+                      onSuccess: () => {
+                        // After successful login, navigate to the requested page
+                        navigate(routePath);
+                        onClose?.();
+                      }
+                    } 
+                  });
+                  window.dispatchEvent(event);
+                  return;
+                }
+                navigate(routePath);
+                onClose?.();
+              };
+
               return (
                 <Button
                   key={section.id}
                   variant={activeSection === section.id ? "secondary" : "ghost"}
-                  className="w-full justify-start"
-                  onClick={() => {
-                    navigate(routePath);
-                    onClose?.();
-                  }}
+                  className="w-full justify-start group"
+                  onClick={handleClick}
                 >
-                  <IconComponent className={`mr-2 h-4 w-4 ${section.id === 'favorites' && activeSection === 'favorites' ? 'fill-current text-red-500' : ''}`} />
-                  {section.label}
+                  {!isLoggedIn && section.requiresAuth ? (
+                    <>
+                      <LogIn className="mr-2 h-4 w-4 opacity-50" />
+                      <span className="text-muted-foreground">{section.label}</span>
+                    </>
+                  ) : (
+                    <>
+                      <IconComponent 
+                        className={`mr-2 h-4 w-4 ${
+                          section.id === 'favorites' && activeSection === 'favorites' 
+                            ? 'fill-current text-red-500' 
+                            : ''
+                        }`} 
+                      />
+                      {section.label}
+                    </>
+                  )}
                 </Button>
               );
             })}

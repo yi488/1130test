@@ -220,7 +220,9 @@ export default function MapExploration() {
   const handleLocateArtifact = (artifact: ArtifactLocation) => {
     if (!mapRef.current) return;
     
-    mapRef.current.setView([artifact.coordinates.lat, artifact.coordinates.lng], 12);
+    // 设置更合适的缩放级别，这里使用10比之前的12更远一些
+    const zoomLevel = 7;
+    mapRef.current.setView([artifact.coordinates.lat, artifact.coordinates.lng], zoomLevel);
     setSelectedArtifact(artifact);
     
     // 打开对应的标记弹窗
@@ -231,7 +233,10 @@ export default function MapExploration() {
     });
     
     if (targetMarker) {
-      targetMarker.openPopup();
+      // 使用setTimeout确保在地图移动完成后再打开弹窗
+      setTimeout(() => {
+        targetMarker.openPopup();
+      }, 300);
     }
   };
 
@@ -248,9 +253,9 @@ export default function MapExploration() {
 
   return (
     <div className="flex flex-col h-full p-4 gap-4">
-      <div className="flex gap-4 flex-1">
+      <div className="flex gap-4 flex-1 overflow-hidden">
         {/* 地图容器 */}
-        <Card className="flex-1">
+        <Card className="flex-1 relative">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
@@ -260,14 +265,13 @@ export default function MapExploration() {
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 h-full">
             <div 
               ref={mapContainer} 
-              className="w-full h-[500px] bg-gray-100"
-              style={{ minHeight: '500px' }}
+              className="w-full h-full min-h-[500px] bg-gray-100 relative z-0"
             >
               {!mapLoaded && (
-                <div className="flex items-center justify-center h-full">
+                <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
                   <div className="text-center">
                     <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                     <p className="text-gray-500">正在加载地图...</p>
@@ -278,8 +282,8 @@ export default function MapExploration() {
           </CardContent>
         </Card>
 
-        {/* 侧边栏 - 保持不变 */}
-        <div className="w-80 space-y-4">
+        {/* 侧边栏 */}
+        <div className="w-80 space-y-4 flex-shrink-0 relative z-10 bg-white rounded-lg shadow-lg">
           {/* 搜索和筛选 */}
           <Card>
             <CardHeader className="pb-3">
@@ -379,7 +383,7 @@ export default function MapExploration() {
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Info className="h-4 w-4" />
             <span>
-              💡 点击地图标记或文物列表查看详细信息。使用 OpenStreetMap 数据，无需 API 密钥。
+               点击地图标记或文物列表查看详细信息。使用 OpenStreetMap 数据。
             </span>
           </div>
         </CardContent>
