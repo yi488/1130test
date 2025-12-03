@@ -10,14 +10,14 @@ import {
   Monitor, 
   Trash2, 
   Database, 
-  Bell, 
+  
   Palette,
   Settings as SettingsIcon,
   Download,
   Upload,
   Info,
   Check,
-  X,
+  
   AlertTriangle
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
