@@ -220,7 +220,7 @@ export default function MapExploration() {
   const handleLocateArtifact = (artifact: ArtifactLocation) => {
     if (!mapRef.current) return;
     
-    // 设置更合适的缩放级别，这里使用10比之前的12更远一些
+
     const zoomLevel = 7;
     mapRef.current.setView([artifact.coordinates.lat, artifact.coordinates.lng], zoomLevel);
     setSelectedArtifact(artifact);

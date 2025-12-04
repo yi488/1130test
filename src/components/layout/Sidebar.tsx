@@ -57,9 +57,9 @@ export function Sidebar({
     <div className={className}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+          {/* <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
             数字文物博物馆
-          </h2>
+          </h2> */}
           <div className="space-y-1">
             <div className="text-xs font-semibold text-muted-foreground px-4 py-2">
               探索文物

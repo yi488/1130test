@@ -49,7 +49,9 @@ async fn main() -> Result<()> {
             api::auth::update_profile,
             api::auth::validate_password_strength,
             api::ai::chat_with_ai,
-            
+            api::history::add_to_history,
+            api::history::get_browsing_history,
+            api::history::clear_browsing_history,
         ])
         .run(tauri::generate_context!())
         .expect("运行 Tauri 应用时出错");

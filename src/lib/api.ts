@@ -34,7 +34,9 @@ export const clearAuthToken = () => {
 export const historyApi = {
   addToHistory: (artifactId: number): Promise<void> => {
     const token = getAuthToken();
-    if (!token) return Promise.resolve();
+    if (!token) {
+      return Promise.reject(new Error('用户未登录'));
+    }
     return invoke('add_to_history', { artifactId, token });
   },
   
@@ -44,13 +46,17 @@ export const historyApi = {
     viewed_at: string;
   }>> => {
     const token = getAuthToken();
-    if (!token) return Promise.resolve([]);
+    if (!token) {
+      return Promise.reject(new Error('用户未登录'));
+    }
     return invoke('get_browsing_history', { token });
   },
   
   clearBrowsingHistory: (): Promise<void> => {
     const token = getAuthToken();
-    if (!token) return Promise.resolve();
+    if (!token) {
+      return Promise.reject(new Error('用户未登录'));
+    }
     return invoke('clear_browsing_history', { token });
   },
 };

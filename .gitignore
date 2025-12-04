@@ -18,11 +18,7 @@ src-tauri/target/
 src-tauri/Cargo.lock
 **/*.rs.bk
 
-# Data files (keep structure but ignore content)
-data/
-*.sqlite
-*.sqlite-*
-*.db
+
 
 # Editor directories and files
 .vscode/*

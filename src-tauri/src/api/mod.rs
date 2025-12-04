@@ -2,3 +2,4 @@
 pub mod artifacts;
 pub mod auth;
 pub mod ai;
+pub mod history;

@@ -155,4 +155,4 @@ export function ArtifactCard({
       </CardContent>
     </Card>
   );
-}
+};

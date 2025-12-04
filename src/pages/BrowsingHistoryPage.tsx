@@ -35,10 +35,16 @@ export function BrowsingHistoryPage() {
         if (isMounted) {
           setHistory(data);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to load browsing history:', err);
         if (isMounted) {
-          setError('无法加载浏览历史，请稍后重试');
+          // 检查是否是未登录错误
+          const errorMessage = err?.message || String(err);
+          if (errorMessage.includes('未登录') || errorMessage.includes('用户未登录')) {
+            setError('请先登录以查看浏览历史');
+          } else {
+            setError('无法加载浏览历史，请稍后重试');
+          }
         }
       } finally {
         if (isMounted) {
