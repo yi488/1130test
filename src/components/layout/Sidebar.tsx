@@ -8,11 +8,13 @@ import {
   Box,
   Map,
   Bot,
-  LogIn
+  LogIn,
+  Shield
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../../lib/api';
 import { useState, useEffect } from 'react';
+import { User } from '../../types';
 
 const utilityFeatures = [
   { id: '3d-artifacts', label: '3D文物', icon: Box },
@@ -23,15 +25,17 @@ const utilityFeatures = [
 ] as const;
 
 interface SidebarProps {
-  activeSection: 'home' | 'favorites' | 'browsing' | '3d-artifacts' | 'map-exploration' | 'ai-assistant' | 'about' | 'settings';
+  activeSection: 'home' | 'favorites' | 'browsing' | '3d-artifacts' | 'map-exploration' | 'ai-assistant' | 'about' | 'settings' | 'admin';
   className?: string;
   onClose?: () => void;
+  currentUser?: User | null;
 }
 
 export function Sidebar({ 
   activeSection,
   className, 
-  onClose 
+  onClose,
+  currentUser
 }: SidebarProps) {
   const navigate = useNavigate();
   const navigationSections = [
@@ -42,6 +46,7 @@ export function Sidebar({
   ];
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isAdmin = currentUser?.email === 'yi@example.com';
 
   useEffect(() => {
     setIsLoggedIn(!!getAuthToken());
@@ -57,9 +62,7 @@ export function Sidebar({
     <div className={className}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          {/* <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-            数字文物博物馆
-          </h2> */}
+          
           <div className="space-y-1">
             <div className="text-xs font-semibold text-muted-foreground px-4 py-2">
               探索文物
@@ -110,6 +113,25 @@ export function Sidebar({
                 </Button>
               );
             })}
+            {isAdmin && (
+              <>
+                <div className="text-xs font-semibold text-muted-foreground px-4 py-2 pt-4">
+                  管理
+                </div>
+                <Button
+                  key="admin"
+                  variant={activeSection === 'admin' ? "secondary" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => {
+                    navigate('/admin');
+                    onClose?.();
+                  }}
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  后台管理
+                </Button>
+              </>
+            )}
           </div>
         </div>
         
@@ -170,6 +192,21 @@ export function Sidebar({
               );
             })}
           </div>
+        </div>
+        
+        {/* Add backend admin button at the bottom */}
+        <div className="mt-auto p-4">
+          <Button
+            variant={activeSection === 'admin' ? 'secondary' : 'ghost'}
+            className="w-full justify-start group"
+            onClick={() => {
+              navigate('/admin');
+              onClose?.();
+            }}
+          >
+            {/* You can add an icon here if you have one */}
+            后端管理
+          </Button>
         </div>
       </div>
     </div>

@@ -2,9 +2,10 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { useState } from 'react';
+import { User } from '../../types';
 
 interface LayoutProps {
-  currentUser?: any;
+  currentUser?: User | null;
   onLoginClick: () => void;
   onLogoutClick: () => void;
 }
@@ -24,6 +25,7 @@ export function Layout({ currentUser, onLoginClick, onLogoutClick }: LayoutProps
     if (path === '/map-exploration') return 'map-exploration';
     if (path === '/about') return 'about';
     if (path === '/settings') return 'settings';
+    if (path === '/admin') return 'admin';
     return 'home';
   };
 
@@ -37,6 +39,7 @@ export function Layout({ currentUser, onLoginClick, onLogoutClick }: LayoutProps
     <div className="flex h-screen bg-background">
       <Sidebar 
         activeSection={activeSection}
+        currentUser={currentUser || undefined}
         className="w-64 border-r hidden md:block"
       />
       

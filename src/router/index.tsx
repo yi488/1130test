@@ -3,14 +3,17 @@ import { Layout } from '../components/layout/Layout';
 import { HomePage } from '../pages/HomePage';
 import { FavoritesPage } from '../pages/FavoritesPage';
 import { BrowsingHistoryPage } from '../pages/BrowsingHistoryPage';
+import { AdminPage } from '../pages/AdminPage';
 import AboutPage from '../pages/AboutPage';
 import SettingsPage from '../pages/SettingsPage';
 import AIAssistant from '../components/AIAssistant';
 import MapExploration from '../components/MapExploration';
 import ThreeDArtifacts from '../components/ThreeDArtifacts';
 
+import { User } from '../types';
+
 interface AppRouterProps {
-  currentUser?: any;
+  currentUser?: User | null;
   onLoginClick: () => void;
   onLogoutClick: () => void;
 }
@@ -52,6 +55,10 @@ export function AppRouter({ currentUser, onLoginClick, onLogoutClick }: AppRoute
         {
           path: 'settings',
           element: <SettingsPage />,
+        },
+        {
+          path: 'admin',
+          element: <AdminPage currentUser={currentUser ?? null} />,
         },
       ],
     },

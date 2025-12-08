@@ -83,14 +83,23 @@ export const artifactApi = {
     return invoke('toggle_favorite', { artifactId, token });
   },
   
-  createArtifact: (data: CreateArtifactRequest): Promise<ArtifactWithFavorite> => 
-    invoke('create_artifact', { data }),
+  createArtifact: (data: CreateArtifactRequest): Promise<ArtifactWithFavorite> => {
+    const token = getAuthToken();
+    if (!token) return Promise.reject(new Error('用户未登录'));
+    return invoke('create_artifact', { artifact: data, token });
+  },
   
-  updateArtifact: (data: UpdateArtifactRequest): Promise<ArtifactWithFavorite> => 
-    invoke('update_artifact', { data }),
+  updateArtifact: (data: UpdateArtifactRequest): Promise<ArtifactWithFavorite> => {
+    const token = getAuthToken();
+    if (!token) return Promise.reject(new Error('用户未登录'));
+    return invoke('update_artifact', { artifact: data, token });
+  },
   
-  deleteArtifact: (id: number): Promise<boolean> => 
-    invoke('delete_artifact', { id }),
+  deleteArtifact: (id: number): Promise<boolean> => {
+    const token = getAuthToken();
+    if (!token) return Promise.reject(new Error('用户未登录'));
+    return invoke('delete_artifact', { id, token });
+  },
 };
 
 export const authApi = {

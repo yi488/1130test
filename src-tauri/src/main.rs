@@ -42,6 +42,8 @@ async fn main() -> Result<()> {
             api::artifacts::get_artifact_by_id,
             api::artifacts::toggle_favorite,
             api::artifacts::create_artifact,
+            api::artifacts::update_artifact,
+            api::artifacts::delete_artifact,
             api::auth::login,
             api::auth::register,
             api::auth::get_current_user,
