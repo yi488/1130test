@@ -11,7 +11,7 @@ interface HeaderProps {
   onLogoutClick: () => void;
   currentUser?: any;
   className?: string;
-  showLogo?: boolean; // 新增：是否显示logo
+  
 }
 
 export function Header({
@@ -20,7 +20,7 @@ export function Header({
   onLogoutClick,
   currentUser,
   className,
-  showLogo = true
+  
 }: HeaderProps) {
   const [searchValue, setSearchValue] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -67,15 +67,8 @@ export function Header({
           </SheetContent>
         </Sheet>
 
-        {/* Logo (optional) */}
-        {showLogo && (
-          <div className="hidden md:flex items-center gap-2 mr-4" data-tauri-drag-region>
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">文</span>
-            </div>
-            <span className="font-semibold text-lg">数字文物</span>
-          </div>
-        )}
+        
+        
 
         {/* -------------------- Search Bar -------------------- */}
         <div 

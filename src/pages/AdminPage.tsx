@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { artifactApi } from "../lib/api";
 import { ArtifactWithFavorite } from "../types";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Alert, AlertDescription } from "../components/ui/alert";
+import { Label } from "../components/ui/label";
 
 const emptyForm = {
   id: 0,
@@ -47,9 +48,25 @@ export function AdminPage({ currentUser }: { currentUser: { email?: string } | n
     loadData();
   }, []);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Get the full path of the selected file
+      // @ts-ignore - webkitRelativePath is not in the type definition but exists in some browsers
+      const fullPath = (e.target as any).value || file.webkitRelativePath || file.name;
+      setForm(prev => ({ ...prev, image_path: fullPath }));
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   const toForm = (a: ArtifactWithFavorite) => ({
@@ -142,8 +159,43 @@ export function AdminPage({ currentUser }: { currentUser: { email?: string } | n
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Input name="title" placeholder="标题" value={form.title} onChange={handleChange} />
-            <Input name="image_path" placeholder="图片文件名 (位于 public/images)" value={form.image_path} onChange={handleChange} />
+            <div className="space-y-2">
+              <Label htmlFor="title">标题</Label>
+              <Input id="title" name="title" value={form.title} onChange={handleChange} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="image_path">图片文件</Label>
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={triggerFileInput}
+                  className="flex-1 justify-start text-left overflow-hidden"
+                >
+                  {form.image_path ? form.image_path : '选择图片文件...'}
+                </Button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+              {form.image_path && (
+                <div className="text-xs text-muted-foreground">
+                  文件名: {form.image_path}
+                </div>
+              )}
+              <Input 
+                id="image_path" 
+                name="image_path" 
+                value={form.image_path} 
+                onChange={handleChange} 
+                placeholder="或手动输入图片路径"
+                className="mt-1"
+              />
+            </div>
             <Input name="period" placeholder="时期" value={form.period} onChange={handleChange} />
             <Input name="dynasty" placeholder="朝代" value={form.dynasty} onChange={handleChange} />
             <Input name="location" placeholder="出土地/地点" value={form.location} onChange={handleChange} />
