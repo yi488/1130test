@@ -1,5 +1,4 @@
--- src-tauri/src/db/migrations/002_add_more_artifacts.sql
--- 添加更多文物数据
+
 
 INSERT OR IGNORE INTO artifacts (
     title, image_path, period, dynasty, location, description, detailed_description, 

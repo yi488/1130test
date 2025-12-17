@@ -1,4 +1,4 @@
-// src-tauri/src/api/history.rs
+
 use crate::db::models::ArtifactWithFavorite;
 use crate::error::Result;
 use crate::api::auth::validate_token;
@@ -13,7 +13,7 @@ pub struct HistoryItem {
     pub viewed_at: String,
 }
 
-/// 添加浏览历史
+
 #[tauri::command]
 pub async fn add_to_history(
     pool: State<'_, SqlitePool>,

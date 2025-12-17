@@ -1,5 +1,4 @@
--- src-tauri/src/db/migrations/002_create_browsing_history.sql
--- 创建浏览历史表
+
 CREATE TABLE IF NOT EXISTS browsing_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -11,7 +10,7 @@ CREATE TABLE IF NOT EXISTS browsing_history (
     UNIQUE(user_id, artifact_id)
 );
 
--- 创建索引以提高查询性能
+
 CREATE INDEX IF NOT EXISTS idx_browsing_history_user_id ON browsing_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_browsing_history_artifact_id ON browsing_history(artifact_id);
 CREATE INDEX IF NOT EXISTS idx_browsing_history_viewed_at ON browsing_history(viewed_at DESC);

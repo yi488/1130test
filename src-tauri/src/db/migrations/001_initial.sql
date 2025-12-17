@@ -1,5 +1,4 @@
--- src-tauri/src/db/migrations/001_initial.sql
--- 创建文物表
+
 CREATE TABLE IF NOT EXISTS artifacts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -18,7 +17,7 @@ CREATE TABLE IF NOT EXISTS artifacts (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 创建用户表
+
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
@@ -27,7 +26,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 创建用户收藏表
+
 CREATE TABLE IF NOT EXISTS user_favorites (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -38,7 +37,7 @@ CREATE TABLE IF NOT EXISTS user_favorites (
     UNIQUE(user_id, artifact_id)
 );
 
--- 插入示例文物数据（仅在表为空时插入）
+
 INSERT OR IGNORE INTO artifacts (
     title, image_path, period, dynasty, location, description, detailed_description, 
     material, dimensions, discovery_location, collection, category
@@ -100,7 +99,7 @@ INSERT OR IGNORE INTO artifacts (
     'calligraphy'
 );
 
--- 创建索引以提高性能
+
 CREATE INDEX IF NOT EXISTS idx_artifacts_category ON artifacts(category);
 CREATE INDEX IF NOT EXISTS idx_artifacts_dynasty ON artifacts(dynasty);
 CREATE INDEX IF NOT EXISTS idx_artifacts_title ON artifacts(title);
